@@ -18,7 +18,9 @@ This is an educational project.
 
 Kaggle notebook link coming soon
 
-Power BI dashboard coming soon
+[![Power BI](https://img.shields.io/badge/Power%20BI-dashboard-742774)](https://powerbi.microsoft.com/)
+
+Public dashboard link coming soon
 
 ## Forecast at chain level
 
@@ -27,6 +29,70 @@ Power BI dashboard coming soon
 > * **What it shows:** Actual and forecast units at chain level.
 > * **Why it matters:** It shows the daily volume pattern for buying and workforce planning.
 > * **What to do with it:** Prepare for the Sunday peak and the quieter Thursday.
+
+## Power BI dashboard
+
+The first page is the report overview and the hero view for the forecast.
+
+<img src="docs/images/dashboard_01.png" alt="Power BI overview page" width="800">
+
+> * **What it shows:** The report total is **12,869,361.44 forecast units in total** for 16 days, with 54 stores and 33 product families.
+> * **Why it matters:** It puts chain demand, recent actual units and the daily forecast in one view.
+> * **What to do with it:** Use the daily table and weekday pattern to plan stock and staffing.
+
+### What each page answers
+
+#### Forecast by store
+
+<img src="docs/images/dashboard_02.png" alt="Power BI forecast by store page" width="800">
+
+> * **What it shows:** How forecast units differ by store, city, store type and selected product families.
+> * **Why it matters:** Local demand does not follow one chain average.
+> * **What to do with it:** Review the largest store and family combinations before local ordering.
+
+#### Actual and forecast by family
+
+<img src="docs/images/dashboard_03.png" alt="Power BI actual and forecast by family page" width="800">
+
+> * **What it shows:** Actual units, forecast units and change versus the last 16 days for product families.
+> * **Why it matters:** Category shifts can change shelf priorities even when the chain total looks stable.
+> * **What to do with it:** Check family level changes before setting replenishment quantities.
+
+#### Accuracy and error
+
+<img src="docs/images/dashboard_04.png" alt="Power BI accuracy and error page" width="800">
+
+> * **What it shows:** Ensemble WAPE is **3.87 percent** for the chain and **11.61 percent** for store and family.
+> * **Why it matters:** Accuracy changes with the level of the decision.
+> * **What to do with it:** Use chain error for total buying and store family error for local buffers.
+
+#### Report guide
+
+<img src="docs/images/dashboard_05.png" alt="Power BI report guide page" width="800">
+
+> * **What it shows:** The report scope, delayed history method, comparison model and practical limits.
+> * **Why it matters:** It defines what the forecast measures and what it does not measure.
+> * **What to do with it:** Read this page before using the report for operating decisions.
+
+### How to read it
+
+The date controls filter the report by year, quarter, month, day and weekday. Store and product views show totals for the stores and products currently selected. The Actual line is observed unit sales from the recent history. The Forecast line is predicted units for the forecast window. The report numbers come from the three Power BI CSV files in `outputs`.
+
+### The data behind it
+
+| File | Purpose | Real headers |
+|---|---|---|
+| `outputs/powerbi_sales_forecast.csv` | Actual and forecast records | `date`, `record_type`, `store_nbr`, `city`, `state`, `store_type`, `cluster`, `family`, `units`, `actual_sales`, `forecast_units`, `onpromotion`, `is_holiday` |
+| `outputs/powerbi_accuracy_by_group.csv` | Accuracy by group | `group_type`, `group`, `actual_sales`, `abs_error`, `wape`, `share_of_sales` |
+| `outputs/powerbi_model_comparison.csv` | Model results by fold and level | `model`, `fold`, `MAE`, `WAPE`, `RMSLE`, `level` |
+
+### How to refresh
+
+Rerun the notebook, replace the three CSV files in `outputs`, then open the report and use Refresh.
+
+### Dashboard limitations
+
+The dashboard reports units, not money. The forecast horizon is 16 days. Totals add up across the stores and products currently selected.
 
 ## The business problem
 
@@ -269,7 +335,7 @@ The weakest area is the sparse tail of product families. Books had WAPE 4.685, H
 
 ## Using the forecast
 
-The unit is items sold. For a single shelf or product family, use the 11.61 percent store and family WAPE as a planning guide. For chain daily volume, use the 3.87 percent chain WAPE. The chain error is about three times smaller because over and under forecasts across many series partly cancel.
+The unit is items sold. Use the [Power BI dashboard](#power-bi-dashboard) with the 11.61 percent store and family WAPE as a planning guide. For chain daily volume, use the 3.87 percent chain WAPE. The chain error is about three times smaller because over and under forecasts across many series partly cancel.
 
 * **Ordering:** Use the store and family forecast as the base quantity. Add a safety margin that reflects the larger local error, especially for sparse families.
 * **Staffing:** Use daily store and chain totals to place more cashiers and shelf staff on high volume days.
@@ -318,6 +384,17 @@ The unit is items sold. For a single shelf or product family, use the 11.61 perc
 | `wape` | Weighted absolute percentage error |
 | `share_of_sales` | Group share of actual units |
 
+`powerbi_model_comparison.csv` has these real headers:
+
+| Column | Meaning |
+|---|---|
+| `model` | Model name |
+| `fold` | Validation fold |
+| `MAE` | Mean absolute error |
+| `WAPE` | Weighted absolute percentage error |
+| `RMSLE` | Root mean squared logarithmic error |
+| `level` | Forecast aggregation level |
+
 ## Run it
 
 ```powershell
@@ -356,7 +433,14 @@ python scripts/make_figures.py
 ```text
 FUTURE_ML_01
 |-- docs
+|   |-- dashboard
+|   |   `-- BI dashboard.pdf
 |   `-- images
+|       |-- dashboard_01.png
+|       |-- dashboard_02.png
+|       |-- dashboard_03.png
+|       |-- dashboard_04.png
+|       |-- dashboard_05.png
 |       |-- eda_holidays.png
 |       |-- eda_oil.png
 |       |-- eda_payday.png
@@ -397,6 +481,7 @@ FUTURE_ML_01
 |   `-- transactions.csv
 |-- requirements.txt
 |-- scripts
+|   |-- dashboard_to_images.py
 |   |-- make_figures.py
 |   `-- requirements.txt
 `-- README.md
